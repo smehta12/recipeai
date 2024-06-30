@@ -99,7 +99,7 @@ class Scrapper(object):
         recipe_url_prefix = "https://www.tarladalal.com/"
         for recipe_list_page_idx in range(1, recipe_pages_info[cuisine]["last_list_page_num"] + 1):
             recipe_list = []
-            print(f"Getting recipies from page {recipe_list_page_idx}")
+            logging.info(f"Getting recipies from page {recipe_list_page_idx}")
             list_url = recipe_pages_info[cuisine]["list_page_url"].format(recipe_list_page_idx)
             recipe_list_page = get_webpage(list_url)
             if not recipe_list_page:
@@ -110,7 +110,7 @@ class Scrapper(object):
                 df_row["recipe_name"] = recipe_span.text
                 recipe_url = recipe_url_prefix + recipe_span.find('a', href=True)['href']
                 df_row["recipe_url"] = recipe_url
-                # print(recipe_url)
+                logging.debug(recipe_url)
                 recipe_page = get_webpage(recipe_url)
                 if not recipe_page:
                     logging.warn(f"Couldn't find recipe page for {recipe_url}")
