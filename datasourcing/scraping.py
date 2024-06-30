@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 from utils import get_webpage
-
+import yaml
 
 class Scrapper(object):
 
@@ -127,3 +127,14 @@ class Scrapper(object):
                 recipe_list.append(df_row)
             recipe_df = pd.DataFrame(recipe_list)
             recipe_df.to_csv(f"{base_data_dir}/recipe_page_{recipe_list_page_idx}.csv", index=False)
+
+
+if __name__ == '__main__':
+    with open("./configs.yaml") as f:
+        configs = yaml.safe_load(f)
+    recipe_pages_info = configs["recipe_pages_info"]
+    cuisine = "mh"
+    base_data_dir = f"../data"
+
+    s = Scrapper()
+    s.scrape(recipe_pages_info, cuisine, base_data_dir)
