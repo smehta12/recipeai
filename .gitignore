@@ -7,4 +7,4 @@ eggs/
 *.egg
 .ipynb_checkpoints
 *.env
-.csv#
+*.csv#
