@@ -1,43 +1,129 @@
-from bs4 import BeautifulSoup
+import logging
+import pandas as pd
+from utils import get_webpage
 
-html = '''
-<div style="width:375px;margin-left:10px;
-    margin-right:10px; margin-top:15px;
-    text-align:left;
-    font-family:Verdana;font-size:1px;
-    color:#0d0d0d; line-height:1.7em;float:left;">
-<section>
-<div id="ctl00_cntrightpanel_pnlRcpMethod">
-<span class="recipe_subheader">Method</span>
-<div id="recipe_small_steps">
-<span style="margin:0;padding:0;display:inline;font-weight:normal;font-size:15px;line-height:1.7em;">
-<span class="recipe_subheader" id="procsection1"><br/>For sabudana khichdi in microwave</span><br/><ol itemprop="recipeInstructions" itemscope itemType="https://schema.org/HowToSection" itemprop="name" class="rcpprocsteps"><span style="display:none;" itemprop="name">For sabudana khichdi in microwave</span><li id="proc1" itemprop="itemListElement" itemscope itemType="https://schema.org/HowToStep"><span itemprop="text">To make <span class="bold1">sabudana khichdi in microwave</span>, wash the sago. Drain and place them in a deep bowl, add approx. ½ cup of water and mix gently. Cover with a lid and keep aside for 8 hours.</span><meta itemprop="url" content="https://www.tarladalal.com/sabudana-khichdi-in-microwave-2749r#proc1" /></li><li id="proc2" itemprop="itemListElement" itemscope itemType="https://schema.org/HowToStep"><span itemprop="text">Combine the oil, cumin seeds and curry leaves in a microwave safe bowl and microwave on high for 1 minute.</span><meta itemprop="url" content="https://www.tarladalal.com/sabudana-khichdi-in-microwave-2749r#proc2" /></li><li id="proc3" itemprop="itemListElement" itemscope itemType="https://schema.org/HowToStep"><span itemprop="text">Add the boiled potatoes, microwave on high for half a minute.</span><meta itemprop="url" content="https://www.tarladalal.com/sabudana-khichdi-in-microwave-2749r#proc3" /></li><li id="proc4" itemprop="itemListElement" itemscope itemType="https://schema.org/HowToStep"><span itemprop="text">Add the soaked sabudana, peanuts, coriander, green chilli paste, lemon juice, sugar and salt, mix gently and microwave on high for 4 minutes, while stirring once in between.</span><meta itemprop="url" content="https://www.tarladalal.com/sabudana-khichdi-in-microwave-2749r#proc4" /></li><li id="proc5" itemprop="itemListElement" itemscope itemType="https://schema.org/HowToStep"><span itemprop="text">Serve the <span class="bold1">sabudana khichdi</span> hot with curds.</span><meta itemprop="url" content="https://www.tarladalal.com/sabudana-khichdi-in-microwave-2749r#proc5" /></li></ol></span></div>
-<div id="recipe_tips"> </div>
-</div>
-</section>
-'''
 
-# Parse the HTML
-soup = BeautifulSoup(html, 'html.parser')
+class Scrapper(object):
 
-# Find the div with id="recipe_small_steps" and extract its text
-recipe_small_steps_div = soup.find('div', id='recipe_small_steps')
+    def _get_ingredients(self, soup, page_link):
+        recipes_ingredients = ""
+        try:
+            ing_list = []
+            rdiv = soup.find('div', id="rcpinglist")
+            for sp in rdiv.select('span'):
+                if sp.has_attr('itemprop'):
+                    ing_list.append(sp.text.strip())
+                elif sp.has_attr('class') and 'recipe_subheader' in sp['class']:
+                    ing_list.append(sp.text.strip() + ":")
+            recipes_ingredients = "\n ".join(ing_list)
+        except:
+            logging.exception(f"Exception when finding ingrediants of {page_link}")
 
-for span in recipe_small_steps_div.find_all('span'):
-    print(span.get_text())
+        if not recipes_ingredients:
+            logging.warning(f"Cannot find recipe ingredients for {page_link}")
+        return recipes_ingredients
 
-# for s in recipe_small_steps_div.stripped_strings:
-#       print(s+",")
+    def _get_recipe(self, soup, page_link):
+        recipe = ""
+        try:
+            rec = soup.find('div', id="recipe_small_steps").get_text("\n").strip()
+            recipe = "\n".join(list(dict.fromkeys(rec.split("\n"))))
+        except:
+            logging.exception(f"Exception when finding recipe for {page_link}")
 
-# print(small_steps_text)
+        if not recipe:
+            logging.warning(f"Cannot find recipe method for {page_link}")
+        return recipe
 
-# Parse the HTML
-# soup = BeautifulSoup(html, 'html.parser')
-#
-# # Find the div with id="recipe_small_steps"
-# recipe_small_steps_div = soup.find('div', id='recipe_small_steps')
-#
-# # Extract text from each span tag within the recipe_small_steps_div
-# small_steps_text = '\n'.join(span.get_text() for span in recipe_small_steps_div.find_all('span'))
-#
-# print(small_steps_text)
+    def _get_time_and_serving(self, soup, page_link):
+        times = ""
+        servings = ""
+        other_info = ""
+        try:
+            prep_time = ""
+            cook_time = ""
+            total_time = ""
+
+            servings_tag = soup.find('span', attrs=dict(itemprop="recipeYield"))
+            if servings_tag:
+                servings = str(servings_tag.text)
+
+            prep_tag = soup.find('time', attrs=dict(itemprop="prepTime"))
+            if prep_tag:
+                prep_time = prep_tag.text
+                times += "Preparation Time: " + prep_time + ", "
+
+            cook_tag = soup.find('time', attrs=dict(itemprop="cookTime"))
+            if cook_tag:
+                cook_time = cook_tag.text
+                times += "Cooking Time: " + cook_time + ", "
+
+            total_time_tag = soup.find('time', itemprop='totalTime')
+            if total_time_tag:
+                span_tag = total_time_tag.find('span')
+                if span_tag:
+                    span_tag.decompose()
+                total_time = total_time_tag.text
+                times += "Total Time: " + total_time + ", "
+
+            # Other time or coocking related info
+            tags_div = soup.find('div', id='recipe_tags')
+            if not tags_div:
+                tags_div = soup.find('div', id='ctl00_cntrightpanel_lblrecipeNameH2')
+
+            p_tag = tags_div.find_next('p')
+            for t in p_tag.find_all('time'):
+                t.decompose()
+            if servings:
+                for serv_time in p_tag.find_all('span', attrs=dict(id="ctl00_cntrightpanel_lblServes")):
+                    serv_time.decompose()
+
+            other_info = p_tag.get_text().replace("&nbsp", " ").split("Show me for")[0].strip()
+            if prep_time:
+                other_info = other_info.replace("Preparation Time:", "")
+            if cook_time:
+                other_info = other_info.replace("Cooking Time:", "")
+            if total_time:
+                other_info = other_info.replace("Total Time:", "")
+
+            times += other_info
+
+        except:
+            logging.exception(f"Error while finding time and serving for {page_link}")
+
+        if not times or not servings:
+            logging.warning(f"Cannot find times, or servings for {page_link}")
+        return times, servings
+
+    def scrape(self, recipe_pages_info, cuisine, base_data_dir):
+        recipe_url_prefix = "https://www.tarladalal.com/"
+        for recipe_list_page_idx in range(1, recipe_pages_info[cuisine]["last_list_page_num"] + 1):
+            recipe_list = []
+            print(f"Getting recipies from page {recipe_list_page_idx}")
+            list_url = recipe_pages_info[cuisine]["list_page_url"].format(recipe_list_page_idx)
+            recipe_list_page = get_webpage(list_url)
+            if not recipe_list_page:
+                continue
+            for recipe_span in recipe_list_page.find_all('span', attrs={"class": "rcc_recipename"}):
+                df_row = {}
+                df_row["recipe_list_url"] = list_url
+                df_row["recipe_name"] = recipe_span.text
+                recipe_url = recipe_url_prefix + recipe_span.find('a', href=True)['href']
+                df_row["recipe_url"] = recipe_url
+                # print(recipe_url)
+                recipe_page = get_webpage(recipe_url)
+                if not recipe_page:
+                    logging.warn(f"Couldn't find recipe page for {recipe_url}")
+                    continue
+                df_row["recipe_long_name"] = recipe_page.find('span', id='ctl00_cntrightpanel_lblrecipeNameH2').text
+                df_row["ingredients"] = self._get_ingredients(recipe_page, recipe_url)
+                df_row["recipe"] = self._get_recipe(recipe_page, recipe_url)
+                df_row["tags"] = recipe_page.find('div', id='recipe_tags').get_text("\n").strip()
+                if not df_row["tags"]:
+                    logging.warn(f"Couldn't find tags for {recipe_url}")
+                times, servings = self._get_time_and_serving(recipe_page, recipe_url)
+                df_row["times"] = times
+                df_row["servings"] = servings
+                recipe_list.append(df_row)
+            recipe_df = pd.DataFrame(recipe_list)
+            recipe_df.to_csv(f"{base_data_dir}/recipe_page_{recipe_list_page_idx}.csv", index=False)
