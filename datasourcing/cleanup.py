@@ -4,13 +4,13 @@ import pandas as pd
 import logging
 
 
-class cleanup(object):
+class Cleanup(object):
     def __init__(self, base_data_dir, cuisine, recipe_pages_info):
         self.base_data_dir = base_data_dir
         self.cuisine = cuisine
         self.recipe_pages_info = recipe_pages_info
 
-    def get_recipes_df(self, page_id):
+    def _get_recipes_df(self, page_id):
         pg_location = f"{self.base_data_dir}/recipe_page_{page_id}.csv"
         if not os.path.exists(pg_location):
             logging.warning(f"[Get Recipes df] Page Id Missing: {page_id}")
@@ -25,12 +25,12 @@ class cleanup(object):
         """
         log_tag = "Lesser_Ing_or_Recipe"
         for page_id in range(1, self.recipe_pages_info[self.cuisine]["last_list_page_num"] + 1):
-            df = self.get_recipes_df(page_id)
+            df = self._get_recipes_df(page_id)
             if df.empty:
                 continue
             logging.info(f"[{log_tag}] Page Idx Processed: {page_id}")
             for idx, row in df.iterrows():
-                if len(df.loc[idx, "recipe_ing"].split("\n")) <= 3:
+                if len(df.loc[idx, "ingredients"].split("\n")) <= 3:
                     logging.warning(f'[{log_tag}]Less ing for {row["recipe_url"]}')
             for idx, row in df.iterrows():
                 if len(df.loc[idx, "recipe"].split("\n")) <= 3:
@@ -39,7 +39,7 @@ class cleanup(object):
     def remove_tags_word_from_tags(self):
         """Remove Tags word from tags column and save it back"""
         for page_id in range(1, self.recipe_pages_info[self.cuisine]["last_list_page_num"] + 1):
-            df = self.get_recipes_df(page_id)
+            df = self._get_recipes_df(page_id)
             if df.empty:
                 continue
             logging.info(f"[Tags_Cleanup] Page Idx Processed: {page_id}")
@@ -62,7 +62,7 @@ class cleanup(object):
             half_sent.append(hs + " ")
 
         for page_id in range(1, self.recipe_pages_info[self.cuisine]["last_list_page_num"] + 1):
-            df = self.get_recipes_df(page_id)
+            df = self._get_recipes_df(page_id)
             if df.empty:
                 continue
             logging.info(f"[Fix_Last_Line] Page Idx Processed: {page_id}")
