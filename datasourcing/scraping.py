@@ -134,7 +134,7 @@ if __name__ == '__main__':
         configs = yaml.safe_load(f)
     recipe_pages_info = configs["recipe_pages_info"]
     cuisine = "mh"
-    base_data_dir = f"../data"
+    base_data_dir = f"../data/{cuisine}"
 
     s = Scrapper()
     s.scrape(recipe_pages_info, cuisine, base_data_dir)
