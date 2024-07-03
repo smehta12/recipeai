@@ -4,8 +4,6 @@ from utils import get_webpage
 import yaml
 
 
-
-
 class Scrapper(object):
 
     def _get_ingredients(self, soup, page_link):
