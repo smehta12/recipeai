@@ -1,8 +1,9 @@
 ---
 recipe_pages_info:
+  recipe_root_url: https://www.tarladalal.com
   gj:
-    list_page_url: https://www.tarladalal.com/recipes-for-veg-recipes-gujarati-24?pageindex={0}
+    list_page_url: recipes-for-veg-recipes-gujarati-24?pageindex={0}
     last_list_page_num: 38
   mh:
-    list_page_url: https://www.tarladalal.com/recipes-for-veg-recipes-maharashtrian-52?pageindex={0}
+    list_page_url: recipes-for-veg-recipes-maharashtrian-52?pageindex={0}
     last_list_page_num: 21

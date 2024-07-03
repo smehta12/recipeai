@@ -3,6 +3,9 @@ import pandas as pd
 from utils import get_webpage
 import yaml
 
+
+
+
 class Scrapper(object):
 
     def _get_ingredients(self, soup, page_link):
@@ -96,11 +99,10 @@ class Scrapper(object):
         return times, servings
 
     def scrape(self, recipe_pages_info, cuisine, base_data_dir):
-        recipe_url_prefix = "https://www.tarladalal.com/"
         for recipe_list_page_idx in range(1, recipe_pages_info[cuisine]["last_list_page_num"] + 1):
             recipe_list = []
             logging.info(f"Getting recipies from page {recipe_list_page_idx}")
-            list_url = recipe_pages_info[cuisine]["list_page_url"].format(recipe_list_page_idx)
+            list_url = recipe_pages_info["recipe_root_url"] + "/" + recipe_pages_info[cuisine]["list_page_url"].format(recipe_list_page_idx)
             recipe_list_page = get_webpage(list_url)
             if not recipe_list_page:
                 continue
@@ -108,7 +110,7 @@ class Scrapper(object):
                 df_row = {}
                 df_row["recipe_list_url"] = list_url
                 df_row["recipe_name"] = recipe_span.text
-                recipe_url = recipe_url_prefix + recipe_span.find('a', href=True)['href']
+                recipe_url = recipe_pages_info["recipe_root_url"] + "/" + recipe_span.find('a', href=True)['href']
                 df_row["recipe_url"] = recipe_url
                 logging.debug(recipe_url)
                 recipe_page = get_webpage(recipe_url)
