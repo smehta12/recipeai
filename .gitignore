@@ -8,3 +8,4 @@ eggs/
 .ipynb_checkpoints
 *.env
 *.csv#
+vectors/
