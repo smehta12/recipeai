@@ -27,8 +27,12 @@ class VectorStore(object):
         docs = loader.load()
         embedding_model = HuggingFaceEmbeddings(model_name=configs.embedding_model,
                                                 model_kwargs=dict(trust_remote_code=True))
+
+        if not os.path.exists(configs.vector_store["dir"]):
+            os.mkdir(configs.vector_store["dir"])
+
         __vector_db = FAISS.from_documents(docs, embedding_model)
-        __vector_db.save_local(configs.vector_store_dir)
+        __vector_db.save_local(configs.vector_store["dir"], index_name=configs.vector_store["index_name"])
 
 
     def _load_raw_data(self):

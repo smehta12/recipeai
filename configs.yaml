@@ -13,4 +13,7 @@ recipe_pages_info:
     last_list_page_num: 21
 
 embedding_model: "Alibaba-NLP/gte-large-en-v1.5" # Chosen from https://huggingface.co/spaces/mteb/leaderboard
-vector_store_dir: "./ai/vectors"
+
+vector_store:
+  dir: "./ai/vectors"
+  index_name: "recipe_ai"

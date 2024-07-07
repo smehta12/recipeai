@@ -12,9 +12,7 @@ class Configs(object):
 
         abs_base_path = os.path.dirname(os.path.abspath(__file__))
         self.yaml_configs["base_data_dir"] = abs_base_path + "/" + self.yaml_configs['base_data_dir']
-        self.yaml_configs["vector_store_dir"] = abs_base_path + "/" + self.yaml_configs['vector_store_dir']
-        if not os.path.exists(self.yaml_configs["vector_store_dir"]):
-            os.mkdir(self.yaml_configs["vector_store_dir"])
+        self.yaml_configs["vector_store"]["dir"] = abs_base_path + "/" + self.yaml_configs["vector_store"]["dir"]
 
     def __getattr__(self, item):
         return self.yaml_configs.get(item, None)
