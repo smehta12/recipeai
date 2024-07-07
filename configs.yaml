@@ -1,9 +1,16 @@
 ---
+base_data_dir: "./data"
+
 recipe_pages_info:
   recipe_root_url: https://www.tarladalal.com
+  columns_to_use: ["recipe_name", "ingredients", "recipe", "tags", "times", "servings"]
+
   gj:
     list_page_url: recipes-for-veg-recipes-gujarati-24?pageindex={0}
     last_list_page_num: 38
   mh:
     list_page_url: recipes-for-veg-recipes-maharashtrian-52?pageindex={0}
     last_list_page_num: 21
+
+embedding_model: "Alibaba-NLP/gte-large-en-v1.5" # Chosen from https://huggingface.co/spaces/mteb/leaderboard
+vector_store_dir: "./ai/vectors"
