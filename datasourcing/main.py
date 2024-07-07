@@ -1,5 +1,4 @@
-import yaml
-
+from configs import configs
 from datasourcing.scraping import Scrapper
 from datasourcing.cleanup import Cleanup
 
@@ -10,11 +9,9 @@ logging.getLogger().setLevel(logging.INFO)
 
 def data_fetching_main():
     cuisine = "mh"
-    base_data_dir = f"../data/"
 
-    with open("./configs.yaml") as f:
-        configs = yaml.safe_load(f)
-    recipe_pages_info = configs["recipe_pages_info"]
+    base_data_dir = configs.base_data_dir
+    recipe_pages_info = configs.recipe_pages_info
 
     s = Scrapper()
     s.scrape(recipe_pages_info, cuisine, base_data_dir)

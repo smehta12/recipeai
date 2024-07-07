@@ -1,8 +1,6 @@
 import logging
 import pandas as pd
 from utils import get_webpage
-import yaml
-
 
 class Scrapper(object):
 
@@ -130,11 +128,7 @@ class Scrapper(object):
 
 
 if __name__ == '__main__':
-    with open("./configs.yaml") as f:
-        configs = yaml.safe_load(f)
-    recipe_pages_info = configs["recipe_pages_info"]
+    from configs import configs
     cuisine = "mh"
-    base_data_dir = f"../data/{cuisine}"
-
     s = Scrapper()
-    s.scrape(recipe_pages_info, cuisine, base_data_dir)
+    s.scrape(configs.recipe_pages_info, cuisine, configs.base_data_dir)
