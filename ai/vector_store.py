@@ -3,16 +3,22 @@ from configs import configs
 import os
 import logging
 
-
 from typing import Any, Iterator, List, Union
 
 from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
-from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
+
 
 
 class VectorStore(object):
+    def __init__(self, vector_store_type, embedding_model):
+        """
+
+        :param vector_store_type: Type of vector store like FAISS, Chroma etc
+        :param embedding_model object
+        """
+        self.embedding_model = embedding_model
+        self.vector_store_type = vector_store_type
 
     def create_and_save_vector_store(self):
         """
@@ -25,15 +31,21 @@ class VectorStore(object):
         csv_df = self._load_raw_data()
         loader = DataFrameLoader(csv_df, page_content_column=configs.recipe_pages_info["columns_to_use"])
         docs = loader.load()
-        embedding_model = HuggingFaceEmbeddings(model_name=configs.embedding_model,
-                                                model_kwargs=dict(trust_remote_code=True))
 
         if not os.path.exists(configs.vector_store["dir"]):
             os.mkdir(configs.vector_store["dir"])
 
-        __vector_db = FAISS.from_documents(docs, embedding_model)
+        __vector_db = self.vector_store_type.from_documents(docs, self.embedding_model)
         __vector_db.save_local(configs.vector_store["dir"], index_name=configs.vector_store["index_name"])
 
+    def get_saved_vector_store(self):
+        vector_store_file_name = configs.vector_store["dir"] + "/" + configs.vector_store["index_name"]
+        if not os.path.exists(configs.vector_store["dir"]) or not os.path.exists(vector_store_file_name + ".pkl"):
+            raise RuntimeError("Required Files for vector store doesn't exists")
+
+        return self.vector_store_type.load_local(configs.vector_store["dir"], embeddings=self.embedding_model,
+                                                 index_name=configs.vector_store["index_name"],
+                                                 allow_dangerous_deserialization=True)
 
     def _load_raw_data(self):
         csv_df = pd.DataFrame()
