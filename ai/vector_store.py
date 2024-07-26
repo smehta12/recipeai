@@ -5,9 +5,10 @@ import logging
 
 from typing import Any, Iterator, List, Union
 
+from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
-
+from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 
 
 class VectorStore(object):
@@ -63,6 +64,20 @@ class VectorStore(object):
                 except:
                     logging.exception(f"Error when loading {file}")
         return csv_df
+
+
+def get_vector_store(vector_store_type, create_store=False):
+    # TODO: Can we cache?
+    if configs.embedding_model == 'text-embedding-3-large':
+        embedding_model = OpenAIEmbeddings(model='text-embedding-3-large')
+    else:
+        embedding_model = HuggingFaceEmbeddings(model_name=configs.embedding_model,
+                                        model_kwargs=dict(trust_remote_code=True))
+
+    vs = VectorStore(vector_store_type, embedding_model)
+    if create_store:
+        vs.create_and_save_vector_store()
+    return vs
 
 
 class BaseDataFrameLoader(BaseLoader):
