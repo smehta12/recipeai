@@ -1,8 +1,4 @@
-from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-
-from configs import configs
-
 from ai.vector_store import get_vector_store
 from ai.inference import Inference
 
