@@ -17,3 +17,8 @@ embedding_model: 'text-embedding-3-large' #"Alibaba-NLP/gte-large-en-v1.5" # Cho
 vector_store:
   dir: "./ai/vectors"
   index_name: "recipe_ai"
+
+auth:
+  allowed_users: ['shalin', 'nisha', 'sakshar', 'manali', 'sagar', 'grishma']
+  access_token_expires_minutes: 1440
+  algorithm: 'HS256'
