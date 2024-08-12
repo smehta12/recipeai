@@ -19,6 +19,6 @@ vector_store:
   index_name: "recipe_ai"
 
 auth:
-  allowed_users: ['shalin', 'nisha', 'sakshar', 'manali', 'sagar', 'grishma']
+  allowed_users: ['shalin']
   access_token_expires_minutes: 1440
   algorithm: 'HS256'
